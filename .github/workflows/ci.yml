@@ -1,0 +1,87 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ── Backend CI ────────────────────────────────────────────────────────────
+  backend-ci:
+    name: Backend Tests & Linting
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: attrition
+          POSTGRES_PASSWORD: attrition
+          POSTGRES_DB: attrition_iq
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Initialize database schema & views
+        env:
+          DATABASE_URL: postgresql://attrition:attrition@localhost:5432/attrition_iq
+        run: |
+          PGPASSWORD=attrition psql -h localhost -U attrition -d attrition_iq -f backend/app/sql/01_schema.sql
+          PGPASSWORD=attrition psql -h localhost -U attrition -d attrition_iq -f backend/app/sql/03_analytics_views.sql
+          cd backend && python -m app.scripts.load_data
+
+      - name: Run pytest test suite
+        env:
+          DATABASE_URL: postgresql://attrition:attrition@localhost:5432/attrition_iq
+        run: |
+          cd backend
+          pytest -v
+
+  # ── Frontend CI ───────────────────────────────────────────────────────────
+  frontend-ci:
+    name: Frontend Typecheck & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build Next.js application
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_TELEMETRY_DISABLED: 1
+        run: |
+          cd frontend
+          npm run build

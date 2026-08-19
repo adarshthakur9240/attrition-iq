@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Env secrets
+.env
+backend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Node
+node_modules/
+.next/
+frontend/node_modules/
+
+# OS
+.DS_Store
+
+# ML artifacts (optional - can keep model.pkl if you want it in repo)
