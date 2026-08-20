@@ -1,7 +1,7 @@
 # ==============================================================================
 # Stage 1: Build stage (compile dependencies)
 # ==============================================================================
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /build
 
@@ -19,7 +19,7 @@ RUN python -m venv /opt/venv && \
 # ==============================================================================
 # Stage 2: Runtime stage (lean production image)
 # ==============================================================================
-FROM python:3.11-slim AS runner
+FROM python:3.12-slim AS runner
 
 WORKDIR /app
 
