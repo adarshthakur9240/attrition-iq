@@ -3,12 +3,27 @@
 import React from "react";
 import { ClayCard } from "./clay-card";
 import { ClayPanel } from "./clay-panel";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
-export function DashboardSkeleton() {
+interface DashboardSkeletonProps {
+  isSlowLoad?: boolean;
+}
+
+export function DashboardSkeleton({ isSlowLoad = false }: DashboardSkeletonProps) {
   return (
-    <div className="space-y-10 animate-pulse">
+    <div className="space-y-10">
+      {/* Cold Start Banner Alert */}
+      {isSlowLoad && (
+        <div className="flex items-center gap-3.5 rounded-[20px] border border-amber-500/30 bg-amber-500/10 px-6 py-4 text-amber-200 shadow-[0_8px_32px_rgba(245,158,11,0.15)] backdrop-blur-md animate-in fade-in duration-300">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400 animate-pulse" />
+          <p className="text-sm font-medium leading-relaxed">
+            <span className="font-semibold text-amber-300">Waking up the server...</span> Note: This project uses a free backend tier. The first load might take up to 50 seconds to spin up. Hang tight!
+          </p>
+        </div>
+      )}
+
       {/* KPI Skeletons */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 animate-pulse">
         {[1, 2, 3, 4].map((i) => (
           <ClayCard key={i} variant="raised" className="p-6 h-36 flex flex-col justify-between">
             <div className="flex justify-between items-center">
@@ -22,11 +37,17 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Main Charts Row Skeletons */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 animate-pulse">
         <div className="lg:col-span-7">
           <ClayPanel title="Loading Department Analytics..." className="h-[380px]">
-            <div className="flex h-64 items-center justify-center">
+            <div className="flex flex-col h-64 items-center justify-center gap-4">
               <div className="h-44 w-44 rounded-full border-8 border-white/5 border-t-[#e86034]/40 animate-spin" />
+              {isSlowLoad && (
+                <div className="flex items-center gap-2 text-xs text-amber-300/90 font-medium">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400" />
+                  <span>Spinning up free tier instance...</span>
+                </div>
+              )}
             </div>
           </ClayPanel>
         </div>
@@ -42,7 +63,7 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Grid of Secondary Charts Skeletons */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 animate-pulse">
         {[1, 2, 3].map((i) => (
           <ClayPanel key={i} title="Loading Metric View..." className="h-[320px]">
             <div className="flex h-48 items-end gap-3 px-4 pb-4">
@@ -56,7 +77,7 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Table Skeleton */}
-      <ClayPanel title="Loading High-Risk Cohort Registry..." className="h-96">
+      <ClayPanel title="Loading High-Risk Cohort Registry..." className="h-96 animate-pulse">
         <div className="space-y-3 pt-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-10 w-full rounded-[14px] bg-white/5" />

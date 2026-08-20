@@ -40,6 +40,7 @@ if (typeof window !== "undefined") {
 export default function DashboardPage() {
   const [data, setData] = useState<FullAnalyticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSlowLoad, setIsSlowLoad] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
@@ -56,7 +57,8 @@ export default function DashboardPage() {
     try {
       const analytics = await fetchAllAnalytics();
       setData(analytics);
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       console.error("Error loading analytics:", err);
       setError(err.message || "Failed to fetch analytics from backend.");
     } finally {
@@ -66,8 +68,18 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
+
+  // Cold start timer: if loading takes longer than 3 seconds, show free-tier alert
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (loading) {
+      timer = setTimeout(() => setIsSlowLoad(true), 3000);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // GSAP ScrollTrigger setup once data is loaded
   useEffect(() => {
@@ -267,7 +279,24 @@ export default function DashboardPage() {
         </div>
 
         {/* LOADING STATE */}
-        {loading && <DashboardSkeleton />}
+        {loading && (
+          <div className="space-y-6">
+            {isSlowLoad && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex items-center gap-3.5 rounded-[20px] border border-amber-500/30 bg-amber-500/10 px-6 py-4 text-amber-200 shadow-[0_8px_32px_rgba(245,158,11,0.15)] backdrop-blur-md"
+              >
+                <AlertTriangle className="h-5 w-5 shrink-0 text-amber-400 animate-pulse" />
+                <p className="text-sm font-medium leading-relaxed">
+                  <span className="font-bold text-amber-300">Waking up the server...</span> Note: This project uses a free backend tier. The first load might take up to 50 seconds to spin up. Hang tight!
+                </p>
+              </motion.div>
+            )}
+            <DashboardSkeleton isSlowLoad={false} />
+          </div>
+        )}
 
         {/* ERROR STATE */}
         {error && !loading && (

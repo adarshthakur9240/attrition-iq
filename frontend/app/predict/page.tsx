@@ -156,7 +156,8 @@ export default function PredictPage() {
         setResult(response);
         setLoading(false);
       }, delayNeeded);
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       console.error("Prediction error:", err);
       setError(err.message || "Failed to execute risk inference.");
       setLoading(false);
