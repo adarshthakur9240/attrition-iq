@@ -53,32 +53,30 @@ AttritionIQ Architecture:     [Continuous Telemetry] ──► [Explainable ML I
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["Client Layer (Next.js 16 App Router)"]
-        UI_Home["Landing Page\n(Three.js / GSAP / R3F)"]
-        UI_Dash["Analytics Dashboard\n(Recharts / Dynamic Cohorts)"]
-        UI_Predict["Risk Scanner Tool\n(Tactile Clay UI / SVG Gauges)"]
+        UI_Home["Landing Page<br/>(Tailwind / UI Primitives)"]
+        UI_Dash["Analytics Dashboard<br/>(Recharts / Dynamic Cohorts)"]
+        UI_Predict["Risk Scanner Tool<br/>(Interactive Forms & Gauges)"]
     end
 
     subgraph APILayer ["FastAPI REST Gateway (Python 3.12)"]
-        Router_Health["/health & /info\n(DB Liveness Probes)"]
-        Router_Analytics["/analytics/*\n(9 View Handlers)"]
-        Router_Predict["/predict/risk\n(ML Inference Engine)"]
+        Router_Health["/health & /info<br/>(DB Liveness Probes)"]
+        Router_Analytics["/analytics/*<br/>(9 View Handlers)"]
+        Router_Predict["/predict/risk<br/>(ML Inference Engine)"]
     end
 
     subgraph DataML ["Data & Intelligence Layer"]
-        PG_DB[("PostgreSQL 16\n(1,470 Records + 9 Views)")]
-        SK_Model["Trained Scikit-Learn Model\n(Balanced Logistic Regression + Scaler)"]
-        XAI_Engine["XAI Decomposition\n(Per-Instance Feature Importance)"]
+        PG_DB[("PostgreSQL 16<br/>(1,470 Records + 9 Views)")]
+        SK_Model["Trained Scikit-Learn Model<br/>(Random Forest + Scaler)"]
+        XAI_Engine["XAI Decomposition<br/>(Per-Instance Feature Importance)"]
     end
 
     UI_Home -->|Fetch Telemetry Demo| Router_Predict
     UI_Dash -->|Fetch Cohort Aggregates| Router_Analytics
     UI_Predict -->|Submit Employee Attributes| Router_Predict
-
-    Router_Health -->|SQL Query| PG_DB
-    Router_Analytics -->|SELECT from v_analytics_*| PG_DB
-    Router_Predict -->|Vectorized Feature Transform| SK_Model
-    SK_Model -->|Coefficients & Odds Ratios| XAI_Engine
-    XAI_Engine -->|Risk Score + Ranked Drivers| UI_Predict
+    
+    Router_Analytics -->|SQL Queries| PG_DB
+    Router_Predict -->|Forward Features| SK_Model
+    SK_Model -->|Probability Matrix| XAI_Engine
 ```
 
 ---
@@ -88,21 +86,21 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor HR as People Ops / HR Leader
-    participant Client as Next.js Scanner (/predict)
-    participant API as FastAPI Backend (/predict/risk)
-    participant Engine as ML Feature Transformer
+    participant HR as HR Leader
+    participant Client as Next.js Scanner
+    participant API as FastAPI Backend
+    participant Engine as ML Transformer
     participant Model as Scikit-Learn Model
-    participant XAI as Feature Importance Resolver
+    participant XAI as Feature Importance
 
-    HR->>Client: Selects Preset or inputs 18 employee attributes
+    HR->>Client: Inputs 18 employee attributes
     Client->>API: POST /predict/risk (JSON Payload)
-    API->>Engine: Encode categoricals, impute medians, apply StandardScaler
-    Engine->>Model: Compute class probabilities P(Attrition=1)
-    Model->>XAI: Compute per-instance linear log-odds contribution
-    XAI-->>API: Return risk_score (e.g. 0.9901), label ('High'), top drivers
-    API-->>Client: HTTP 200 OK with formatted JSON payload
-    Client->>HR: Render Concentric Radar Animation -> Radial Gauge -> Prescriptive Playbook
+    API->>Engine: Encode categoricals & scale features
+    Engine->>Model: Compute flight-risk probability
+    Model->>XAI: Extract mathematical feature weights
+    XAI-->>API: Return risk_score (e.g. 0.99) & top drivers
+    API-->>Client: HTTP 200 OK (Formatted JSON)
+    Client-->>HR: Render Radial Gauge & Risk Factors
 ```
 
 ---
@@ -111,35 +109,35 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph VCS ["Version Control (GitHub)"]
+    subgraph VCS ["Version Control"]
         Push["git push origin main"]
     end
 
     subgraph GHA ["GitHub Actions CI Pipeline"]
         subgraph BackendJob ["Backend CI (Python 3.12)"]
-            PG_Service["Postgres 16 Alpine Service"]
+            PG_Service["Postgres 16 Service"]
             Init_Schema["Run 01_schema.sql & 03_views.sql"]
             Seed_Data["Execute load_data.py"]
-            Run_Pytest["Run 15 Pytest Test Cases"]
+            Run_Pytest["Run Pytest Suite"]
         end
 
         subgraph FrontendJob ["Frontend CI (Node.js 20)"]
             NPM_CI["npm ci dependencies"]
-            Next_Build["npm run build (Standalone Next.js)"]
+            Next_Build["npm run build"]
         end
     end
 
     subgraph Deployment ["Continuous Deployment (CD)"]
-        Deploy_Render["Render Backend Web Service\n(Docker multi-stage runner)"]
-        Deploy_Vercel["Vercel Edge Network\n(Static & Serverless Bundle)"]
+        Deploy_Render["Render Web Service<br/>(Backend API)"]
+        Deploy_Vercel["Vercel Edge Network<br/>(Frontend UI)"]
     end
 
-    Push --> BackendJob
-    Push --> FrontendJob
-    PG_Service --> Init_Schema --> Seed_Data --> Run_Pytest
-    NPM_CI --> Next_Build
-    Run_Pytest -->|Green CI| Deploy_Render
-    Next_Build -->|Green CI| Deploy_Vercel
+    Push --> GHA
+    GHA --> BackendJob
+    GHA --> FrontendJob
+    
+    BackendJob -->|If Tests Pass| Deploy_Render
+    FrontendJob -->|If Build Passes| Deploy_Vercel
 ```
 
 ---
