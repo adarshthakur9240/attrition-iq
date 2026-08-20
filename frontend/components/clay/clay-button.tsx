@@ -5,6 +5,8 @@ import Link from "next/link";
 import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+const MotionLink = motion.create(Link);
+
 export type ClayButtonVariant = "primary" | "secondary" | "outline" | "ghost";
 export type ClayButtonSize = "sm" | "md" | "lg" | "xl";
 
@@ -90,16 +92,15 @@ export const ClayButton = React.forwardRef<HTMLButtonElement, ClayButtonProps>(
       }
 
       return (
-        <Link href={href} legacyBehavior passHref>
-          <motion.a
-            className={baseClass}
-            whileHover={{ y: -2, scale: 1.02 }}
-            whileTap={{ y: 2, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 450, damping: 25 }}
-          >
-            {content}
-          </motion.a>
-        </Link>
+        <MotionLink
+          href={href}
+          className={baseClass}
+          whileHover={{ y: -2, scale: 1.02 }}
+          whileTap={{ y: 2, scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 450, damping: 25 }}
+        >
+          {content}
+        </MotionLink>
       );
     }
 
