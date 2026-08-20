@@ -4,7 +4,7 @@
 -- =============================================================================
 
 -- Drop and recreate for idempotent runs
-DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS employees CASCADE;
 
 CREATE TABLE employees (
     -- Surrogate PK (original dataset has no single natural key)
