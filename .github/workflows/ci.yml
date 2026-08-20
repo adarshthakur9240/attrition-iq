@@ -48,9 +48,16 @@ jobs:
         env:
           DATABASE_URL: postgresql://attrition:attrition@localhost:5432/attrition_iq
         run: |
-          PGPASSWORD=attrition psql -h localhost -U attrition -d attrition_iq -f backend/app/sql/01_schema.sql
-          PGPASSWORD=attrition psql -h localhost -U attrition -d attrition_iq -f backend/app/sql/03_analytics_views.sql
-          cd backend && python -m app.scripts.load_data
+          # 1. Pehle backend folder mein jaao
+          cd backend
+          
+          # 2. Python script run kar (Ye automatically 01_schema.sql chalayegi, 
+          # table banayegi aur CSV data load karegi)
+          python -m app.scripts.load_data
+          
+          # 3. Data load hone ke ekdum BAAD views create kar
+          # (Dhyan de: ab hum backend folder ke andar hain, isliye path app/sql/... hoga)
+          PGPASSWORD=attrition psql -h localhost -U attrition -d attrition_iq -f app/sql/03_analytics_views.sql
 
       - name: Run pytest test suite
         env:
